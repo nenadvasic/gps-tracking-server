@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8" />
+<title>GPS TRACKER</title>
+<style>
+	html, body {
+		margin: 0;
+		padding: 0;
+		width: 100%;
+		height: 100%;
+		text-align: center;
+	}
+	#map {
+		height: 700px;
+		width: 80%;
+		margin: 60px auto;
+	}
+</style>
+<script>
+
+	var map;
+	var markers = [];
+
+	function initMap() {
+		// Create a map object and specify the DOM element for display.
+		map = new google.maps.Map(document.getElementById('map'), {
+			center: {lat: 44.805807, lng: 20.469332},
+			scrollwheel: false,
+			zoom: 14
+		});
+
+		// document.getElementById("map").setAttribute("style", "height:" + window.innerHeight);
+	}
+
+	function updateMarker(imei, speed, date, myLatLng)
+	{
+		// console.log(imei)
+
+		if (typeof markers[imei] === 'undefined')
+		{
+			var icon = '/truck.png';
+			markers[imei] = new google.maps.Marker({
+				position: myLatLng,
+				map: map,
+				title: 'IMEI: ' + imei,
+				icon: icon
+			});
+			map.setCenter(myLatLng);
+			initInfoWindow(imei, speed, date);
+		}
+		else
+		{
+			updateInfoWindow(imei, speed, date);
+			markers[imei].setPosition(myLatLng);
+		}
+
+		// map.setCenter(myLatLng);
+	}
+
+	function initInfoWindow(imei, speed, date)
+	{
+		var contentString = '<div id="content">'+
+			'<div id="siteNotice">'+
+			'</div>'+
+			'<h1 id="firstHeading" class="firstHeading" style="text-align:left;">' + imei + '</h1>'+
+			'<div id="bodyContent" style="text-align:left;">'+
+			'Brzina: <span id="' + imei + '-speed-info-window">' + speed + '</span> kmh<br />' +
+			'Vreme GPS zapisa: <span id="' + imei + '-date-info-window">' + date + '</span>' +
+			'</div>'+
+			'</div>';
+
+		var infowindow = new google.maps.InfoWindow({
+			content: contentString
+		});
+
+		markers[imei].addListener('click', function() {
+			infowindow.open(map, markers[imei]);
+		});
+	}
+
+	function updateInfoWindow(imei, speed, date)
+	{
+		var element_speed = document.getElementById(imei + '-speed-info-window');
+		var element_date = document.getElementById(imei + '-date-info-window');
+
+		if (element_speed) element_speed.innerHTML = speed;
+		if (element_date) element_date.innerHTML = date;
+	}
+
+	var serversocket = new WebSocket("ws://localhost:1337/location");
+
+	serversocket.onopen = function() {
+		// serversocket.send("Connection init");
+	}
+
+	serversocket.onmessage = function(e) {
+		var res = JSON.parse(e.data);
+		var date = new Date(res.gpstime * 1000);
+
+		var record_text = "[" + date + "] " + res.imei + ' : ' + res.lon + "," + res.lat;
+
+		console.log(record_text);
+
+		updateMarker(res.imei, res.speed, date, {lat: parseFloat(res.lat), lng: parseFloat(res.lon)});
+
+		// document.getElementById("locations").innerHTML += record_text + "<br>";
+	};
+
+
+</script>
+<script src="https://maps.googleapis.com/maps/api/js?key=GOOGLE_MAPS_KEY&callback=initMap" async defer></script>
+</head>
+
+<body>
+	<div id="map"></div>
+</body>
+</html>

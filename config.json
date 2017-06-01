@@ -1,0 +1,14 @@
+{
+	"host": "",
+	"db" : {
+		"host": "localhost",
+		"user": "username",
+		"pass": "password",
+		"name": "dbname",
+		"col": "dbcol"
+	},
+	"protocols": [
+		{"id": 1, "name": "ruptela", "port": "5046", "enabled": true},
+		{"id": 2, "name": "teltonika", "port": "5027", "enabled": true}
+	]
+}

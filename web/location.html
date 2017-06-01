@@ -1,0 +1,20 @@
+<html>
+<head>
+<meta charset="UTF-8" />
+<script>
+	var serversocket = new WebSocket("ws://localhost:8080/location");
+
+	serversocket.onopen = function() {
+		// serversocket.send("Connection init");
+	}
+
+	serversocket.onmessage = function(e) {
+		document.getElementById("locations").innerHTML += e.data + "<br>";
+	};
+</script>
+</head>
+
+<body>
+<div id="locations">Lokacije (5 secs update):<br /><br /></div>
+</body>
+</html>
